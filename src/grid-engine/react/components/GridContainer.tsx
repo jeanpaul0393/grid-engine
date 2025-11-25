@@ -37,7 +37,7 @@ export const GridContainer = () => {
         ref={refContainer}
         style={{
           height: rows * rowHeight + (rows - 1) * gap.row,
-          gridTemplateColumns: `repeat(${cols}, 1fr)`,
+          gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))`,
           gridTemplateRows: `repeat(${rows}, ${rowHeight}px)`,
           gap: `${gap.row}px ${gap.col}px`,
         }}
