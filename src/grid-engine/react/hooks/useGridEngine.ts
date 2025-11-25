@@ -81,8 +81,8 @@ export const useGridEngine = () => {
   );
 
   const resizeMove = useCallback(
-    (w: number, h: number) => {
-      dispatch({ type: "RESIZE_MOVE", payload: { w, h } });
+    (w: number, h: number, x: number, y: number) => {
+      dispatch({ type: "RESIZE_MOVE", payload: { w, h, x, y } });
     },
     [dispatch]
   );
