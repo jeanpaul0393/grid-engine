@@ -19,10 +19,23 @@ export const GridContainer = () => {
 
   useEffect(() => {
     if (!refContainer.current) return;
-    dispatch({
-      type: "SET_CONTAINER_WIDTH",
-      payload: refContainer.current.offsetWidth,
+
+    const resizeObserver = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        if (entry.target === refContainer.current) {
+          dispatch({
+            type: "SET_CONTAINER_WIDTH",
+            payload: entry.contentRect.width,
+          });
+        }
+      }
     });
+
+    resizeObserver.observe(refContainer.current);
+
+    return () => {
+      resizeObserver.disconnect();
+    };
   }, []);
 
   useOnClickOutside(refContainer, () => {
