@@ -1,4 +1,4 @@
-import { FrameRenderer } from "./FrameRenderer";
+// import { FrameRenderer } from "./FrameRenderer";
 import type { IGridConfig, IGridItem } from "./grid-engine/core/types";
 import { DraggableSource } from "./grid-engine/react/components/DraggableSource";
 import { GridContainer } from "./grid-engine/react/components/GridContainer";
@@ -95,19 +95,16 @@ function App() {
 
       {/* GRILLA GENÉRICA */}
       <main>
-        <FrameRenderer>
-          <div className="section-header"></div>
-          <div className="section">
-            <div className="section-grid-container">
-              <GridEngineProvider
-                gridConfig={gridConfig}
-                initialLayout={layout}
-              >
-                <GridContainer />
-              </GridEngineProvider>
-            </div>
+        {/* <FrameRenderer> */}
+        <div className="section-header"></div>
+        <div className="section">
+          <div className="section-grid-container">
+            <GridEngineProvider gridConfig={gridConfig} initialLayout={layout}>
+              <GridContainer />
+            </GridEngineProvider>
           </div>
-        </FrameRenderer>
+        </div>
+        {/* </FrameRenderer> */}
       </main>
     </div>
   );
