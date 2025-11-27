@@ -4,6 +4,7 @@ import {
   snapToGrid,
 } from "../../core/helpers/gridMath";
 import type { IGridConfig, IGridItem } from "../../core/types";
+import { v4 as uuidv4 } from "uuid";
 
 export interface IGridEngineState {
   config: IGridConfig;
@@ -21,6 +22,8 @@ export interface IGridEngineState {
   // Hover / selección
   selectedItemId: string | null;
   isGridSelected: boolean;
+
+  draggingExternal: { w: number; h: number; component: React.ReactNode } | null;
 }
 
 export type TGridEngineAction =
@@ -48,7 +51,16 @@ export type TGridEngineAction =
   | { type: "SELECT_ITEM"; payload: { id: string | null } }
 
   // Modo edición
-  | { type: "SET_EDITING"; payload: boolean };
+  | { type: "SET_EDITING"; payload: boolean }
+
+  //External drag
+  | {
+      type: "START_EXTERNAL_DRAG";
+      payload: { w: number; h: number; component: React.ReactNode };
+    }
+  | { type: "EXTERNAL_DRAG_MOVE"; payload: { x: number; y: number } } // x,y en pixeles relativos al container
+  | { type: "END_EXTERNAL_DRAG" }
+  | { type: "CANCEL_EXTERNAL_DRAG" };
 
 export const initialGridEngineState: IGridEngineState = {
   config: {
@@ -65,6 +77,7 @@ export const initialGridEngineState: IGridEngineState = {
   resizingItemId: null,
   selectedItemId: null,
   isGridSelected: false,
+  draggingExternal: null,
 };
 
 export function gridEngineReducer(
@@ -267,6 +280,90 @@ export function gridEngineReducer(
       return {
         ...state,
         isEditing: action.payload,
+      };
+    }
+
+    // ------------------------------------------
+    // EXTERNAL DRAG (Toolbar -> Grid)
+    // ------------------------------------------
+    case "START_EXTERNAL_DRAG": {
+      return {
+        ...state,
+        draggingExternal: action.payload,
+        selectedItemId: null,
+        isGridSelected: true,
+      };
+    }
+
+    case "EXTERNAL_DRAG_MOVE": {
+      if (!state.draggingExternal) return state;
+
+      const tempItem = {
+        id: "temp",
+        x: 0,
+        y: 0,
+        w: state.draggingExternal.w,
+        h: state.draggingExternal.h,
+        component: null,
+      };
+
+      const { x: newX, y: newY } = snapToGrid(
+        tempItem,
+        action.payload.x,
+        action.payload.y,
+        state.containerWidth,
+        state.config
+      );
+
+      const preview = clampItemToGrid(
+        { ...tempItem, x: newX, y: newY },
+        state.config
+      );
+
+      return {
+        ...state,
+        dragPreview: preview,
+      };
+    }
+
+    case "CANCEL_EXTERNAL_DRAG": {
+      return {
+        ...state,
+        draggingExternal: null,
+        dragPreview: null,
+      };
+    }
+
+    case "END_EXTERNAL_DRAG": {
+      if (!state.draggingExternal || !state.dragPreview) {
+        return {
+          ...state,
+          draggingExternal: null,
+          dragPreview: null,
+        };
+      }
+
+      const newItem: IGridItem = {
+        id: uuidv4(),
+        x: state.dragPreview.x,
+        y: state.dragPreview.y,
+        w: state.draggingExternal.w,
+        h: state.draggingExternal.h,
+        component: state.draggingExternal.component,
+      };
+
+      const resolvedLayout = resolveCollisions(
+        [...state.items, newItem],
+        newItem,
+        newItem.id
+      );
+
+      return {
+        ...state,
+        draggingExternal: null,
+        dragPreview: null,
+        items: resolvedLayout,
+        selectedItemId: newItem.id,
       };
     }
 

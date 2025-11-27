@@ -51,6 +51,7 @@
   border: 2px solid var(--blue-select-item);
   border-radius: 30%;
   pointer-events: auto;
+  touch-action: none;
   z-index: 20;
   transform: translate(-50%, -50%);
 

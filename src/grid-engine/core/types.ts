@@ -27,3 +27,10 @@ export interface IGridConfig {
     col: number;
   };
 }
+
+export interface ITool {
+  label: string;
+  defaultW: number;
+  defaultH: number;
+  component: React.ReactNode;
+}

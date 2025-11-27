@@ -5,6 +5,7 @@ import { useGridEngineContext } from "../context/GridEngineContext";
 import { GridItem } from "./GridItem";
 import { GridItemShadow } from "./GridItemShadow";
 import { useOnClickOutside } from "../hooks/useOnClickOutside";
+import { DragBridge } from "../../core/DragBridge";
 
 export const GridContainer = () => {
   const { config } = useGridEngine();
@@ -14,7 +15,7 @@ export const GridContainer = () => {
   const refContainer = useRef<HTMLDivElement>(null);
 
   const { items, isGridSelected } = state;
-  const { rows, cols, rowHeight, gap } = config;
+  const { rows, cols, rowHeight, gap, colWidth } = config;
 
   useEffect(() => {
     if (!refContainer.current) return;
@@ -30,6 +31,65 @@ export const GridContainer = () => {
     }
   });
 
+  const handleDragEnter = (e: React.DragEvent) => {
+    const payload = DragBridge.getPayload();
+
+    if (payload) {
+      e.preventDefault();
+
+      dispatch({
+        type: "START_EXTERNAL_DRAG",
+        payload: {
+          w: payload.w,
+          h: payload.h,
+          component: payload.component,
+        },
+      });
+      return;
+    }
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = "copy";
+
+    if (!refContainer.current) return;
+
+    // Calcular coordenadas relativas
+    const rect = refContainer.current.getBoundingClientRect();
+    const x = e.clientX - rect.left - (colWidth || 0) / 2;
+    const y =
+      e.clientY - rect.top + refContainer.current.scrollTop - rowHeight / 2;
+
+    dispatch({ type: "EXTERNAL_DRAG_MOVE", payload: { x, y } });
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+
+    dispatch({ type: "END_EXTERNAL_DRAG" });
+
+    DragBridge.clear();
+  };
+
+  useEffect(() => {
+    const handleDragStart = () => {
+      dispatch({ type: "SET_GRID_SELECTION", payload: true });
+    };
+
+    const handleDragEnd = () => {
+      dispatch({ type: "CANCEL_EXTERNAL_DRAG" });
+    };
+
+    window.addEventListener("GRID_EXTERNAL_DRAG_START", handleDragStart);
+    window.addEventListener("GRID_EXTERNAL_DRAG_END", handleDragEnd);
+
+    return () => {
+      window.removeEventListener("GRID_EXTERNAL_DRAG_START", handleDragStart);
+      window.removeEventListener("GRID_EXTERNAL_DRAG_END", handleDragEnd);
+    };
+  }, [dispatch]);
+
   return (
     <div style={{ position: "relative" }} ref={refContainer}>
       <div
@@ -41,11 +101,19 @@ export const GridContainer = () => {
           gridTemplateRows: `repeat(${rows}, ${rowHeight}px)`,
           gap: `${gap.row}px ${gap.col}px`,
         }}
+        id="grid-canvas-container"
         onMouseDownCapture={() => {
           if (!isGridSelected) {
             dispatch({ type: "SET_GRID_SELECTION", payload: true });
           }
         }}
+        onClick={() => {
+          console.log("pasó");
+          dispatch({ type: "SELECT_ITEM", payload: { id: null } });
+        }}
+        onDragEnter={handleDragEnter}
+        onDragOver={handleDragOver}
+        onDrop={handleDrop}
       >
         <GridGuideOverlay />
         {items.map((gridItem) => {
