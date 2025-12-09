@@ -1,3 +1,4 @@
+import { v4 } from "uuid";
 import { FrameRenderer } from "./FrameRenderer";
 import type { IGridConfig, IGridItem } from "./grid-engine/core/types";
 import { DraggableSource } from "./grid-engine/react/components/DraggableSource";
@@ -32,6 +33,10 @@ const layout: IGridItem[] = [
     y: 0,
     w: 3,
     h: 2,
+    minW: 2,
+    maxW: 5,
+    minH: 2,
+    maxH: 3,
     component: (
       <div
         style={{
@@ -43,7 +48,7 @@ const layout: IGridItem[] = [
           height: "100%",
         }}
       >
-        item 1
+        max and min size
       </div>
     ),
   },
@@ -70,36 +75,61 @@ const layout: IGridItem[] = [
   },
 ];
 
+const idGrid1 = v4();
+const idGrid2 = v4();
+
 function App() {
   return (
     <div className="layout">
-      {/* SIDEBAR GENÉRICO */}
       <aside>
-        {/* Ítem 1: Ocupa 4x4 */}
-        <DraggableSource w={4} h={4} className="sidebar-item">
+        <DraggableSource
+          w={4}
+          h={4}
+          className="sidebar-item"
+          targetGridId={idGrid1}
+        >
           <MiGraficoVentas />
         </DraggableSource>
 
-        {/* Ítem 2: Ocupa 2x1 */}
-        <DraggableSource w={2} h={1} className="sidebar-item">
+        <DraggableSource
+          w={2}
+          h={1}
+          className="sidebar-item"
+          targetGridId={idGrid1}
+        >
           <TarjetaUsuario name="Pepe" />
         </DraggableSource>
 
-        {/* Ítem 3: Algo inline */}
-        <DraggableSource w={2} h={1} className="sidebar-item">
+        <DraggableSource
+          w={2}
+          h={1}
+          className="sidebar-item"
+          targetGridId={idGrid1}
+        >
           <button style={{ width: "100%", height: "100%" }}>
             Botón Simple
           </button>
         </DraggableSource>
       </aside>
 
-      {/* GRILLA GENÉRICA */}
       <main>
         <FrameRenderer>
           <div className="section-header"></div>
-          <div className="section">
+          <div className="section section-1">
             <div className="section-grid-container">
               <GridEngineProvider
+                id={idGrid1}
+                gridConfig={gridConfig}
+                initialLayout={layout}
+              >
+                <GridContainer />
+              </GridEngineProvider>
+            </div>
+          </div>
+          <div className="section section-2">
+            <div className="section-grid-container">
+              <GridEngineProvider
+                id={idGrid2}
                 gridConfig={gridConfig}
                 initialLayout={layout}
               >

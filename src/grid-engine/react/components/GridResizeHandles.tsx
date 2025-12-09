@@ -19,6 +19,11 @@ export const GridResizeHandles = ({
 }: IProps) => {
   const { dispatch } = useGridEngineContext();
 
+  const minW = item.minW ?? 1;
+  const minH = item.minH ?? 1;
+  const maxW = item.maxW ?? Infinity;
+  const maxH = item.maxH ?? Infinity;
+
   const bindResize = useDrag(
     ({ event, args: [direction], active, movement: [mx, my], first, last }) => {
       event.stopPropagation();
@@ -32,12 +37,6 @@ export const GridResizeHandles = ({
         onResize({ mx, my, direction: dir });
       }
 
-      // ---------------------------------------------------------
-      // 4) Lógica de Resize Libre con Snap
-      // ---------------------------------------------------------
-
-      // Convertimos el movimiento en píxeles (mx, my) a unidades de grilla (cols, rows)
-      // Math.round es lo que hace el "Snap" magnético
       const deltaCol = Math.round(mx / factorX);
       const deltaRow = Math.round(my / factorY);
 
@@ -46,27 +45,27 @@ export const GridResizeHandles = ({
       let newW = item.w;
       let newH = item.h;
 
-      // Aplicamos la lógica según la dirección
-      if (dir.includes("e")) newW = Math.max(1, item.w + deltaCol);
-      if (dir.includes("s")) newH = Math.max(1, item.h + deltaRow);
+      if (dir.includes("e")) {
+        newW = Math.max(minW, Math.min(maxW, item.w + deltaCol));
+      }
+      if (dir.includes("s")) {
+        newH = Math.max(minH, Math.min(maxH, item.h + deltaRow));
+      }
 
       if (dir.includes("w")) {
-        // Al mover a la izquierda, reducimos x y aumentamos w
-        // Pero no podemos permitir que w sea < 1
-        const maxDelta = item.w - 1;
-        const validDelta = Math.min(deltaCol, maxDelta); // Evitar inversión
-        newX = item.x + validDelta;
-        newW = item.w - validDelta;
+        const rawNewW = item.w - deltaCol;
+        newW = Math.max(minW, Math.min(maxW, rawNewW));
+        const effectiveDelta = item.w - newW;
+        newX = item.x + effectiveDelta;
       }
 
       if (dir.includes("n")) {
-        const maxDelta = item.h - 1;
-        const validDelta = Math.min(deltaRow, maxDelta);
-        newY = item.y + validDelta;
-        newH = item.h - validDelta;
+        const rawNewH = item.h - deltaRow;
+        newH = Math.max(minH, Math.min(maxH, rawNewH));
+        const effectiveDelta = item.h - newH;
+        newY = item.y + effectiveDelta;
       }
 
-      // Despachamos el movimiento (Actualiza la sombra)
       if (active) {
         dispatch({
           type: "RESIZE_MOVE",

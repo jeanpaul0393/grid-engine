@@ -7,6 +7,7 @@ import type { IGridConfig, IGridItem } from "../../core/types";
 import { v4 as uuidv4 } from "uuid";
 
 export interface IGridEngineState {
+  gridId: string;
   config: IGridConfig;
   items: IGridItem[];
   isEditing: boolean;
@@ -58,11 +59,12 @@ export type TGridEngineAction =
       type: "START_EXTERNAL_DRAG";
       payload: { w: number; h: number; component: React.ReactNode };
     }
-  | { type: "EXTERNAL_DRAG_MOVE"; payload: { x: number; y: number } } // x,y en pixeles relativos al container
+  | { type: "EXTERNAL_DRAG_MOVE"; payload: { x: number; y: number } }
   | { type: "END_EXTERNAL_DRAG" }
   | { type: "CANCEL_EXTERNAL_DRAG" };
 
 export const initialGridEngineState: IGridEngineState = {
+  gridId: "default",
   config: {
     cols: 12,
     rows: 60,
@@ -200,7 +202,6 @@ export function gridEngineReducer(
 
       const movedItem = state.dragPreview;
 
-      // resolver colisiones
       const resolvedLayout = resolveCollisions(
         state.items,
         movedItem,
@@ -231,8 +232,6 @@ export function gridEngineReducer(
       const item = state.items.find((i) => i.id === state.resizingItemId);
       if (!item) return state;
 
-      // Usamos el payload completo (x, y, w, h) calculados desde el componente
-      // Clamp para asegurar que no se salga de los límites globales del grid
       const resizedPreview = clampItemToGrid(
         {
           ...item,

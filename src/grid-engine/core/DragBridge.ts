@@ -4,6 +4,7 @@ interface IDragPayload {
   w: number;
   h: number;
   component: ReactNode;
+  targetGridId: string;
 }
 
 class DragBridgeService {

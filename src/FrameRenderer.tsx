@@ -22,7 +22,7 @@ export const FrameRenderer = ({
     const iframeBody = iframeDoc.body;
 
     iframeBody.style.margin = "0px";
-    iframeBody.style.overflow = "hidden";
+    iframeBody.style.overflow = "auto";
 
     const headChildren = Array.from(document.head.children);
 

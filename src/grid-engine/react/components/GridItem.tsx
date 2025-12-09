@@ -22,11 +22,8 @@ export const GridItem = ({ item, children }: IProps) => {
     isGridSelected,
   } = state;
 
-  // Verificamos si este ítem está seleccionado
   const isSelected = selectedItemId === item.id;
 
-  // Ocultamos el ítem real si se está redimensionando (para ver solo la sombra)
-  // O puedes dejarlo visible, depende de tu gusto. Normalmente se oculta o se baja opacidad.
   const isResizing = resizingItemId === item.id;
   const isMoving = draggingItemId === item.id;
 
@@ -35,9 +32,6 @@ export const GridItem = ({ item, children }: IProps) => {
 
   const { rowHeight, gap, colWidth } = config;
 
-  // -------------------------------------------------------------
-  // FACTORES EN PX PARA TRADUCIR COLUMNAS → PIXELES
-  // -------------------------------------------------------------
   const factorX = useMemo(() => {
     return (colWidth ?? 0) + gap.col;
   }, [colWidth, gap.col]);
@@ -46,9 +40,24 @@ export const GridItem = ({ item, children }: IProps) => {
     return rowHeight + gap.row;
   }, [rowHeight, gap.row]);
 
-  // -------------------------------------------------------------
-  // MOTION VALUES PARA MOVER EL ÍTEM LIBREMENTE DURANTE EL DRAG
-  // -------------------------------------------------------------
+  const minPxW = useMemo(
+    () => (item.minW ?? 1) * factorX - gap.col,
+    [item.minW, factorX, gap.col]
+  );
+  const maxPxW = useMemo(
+    () => (item.maxW ?? Infinity) * factorX - gap.col,
+    [item.maxW, factorX, gap.col]
+  );
+
+  const minPxH = useMemo(
+    () => (item.minH ?? 1) * factorY - gap.row,
+    [item.minH, factorY, gap.row]
+  );
+  const maxPxH = useMemo(
+    () => (item.maxH ?? Infinity) * factorY - gap.row,
+    [item.maxH, factorY, gap.row]
+  );
+
   const mx = useMotionValue(0);
   const my = useMotionValue(0);
 
@@ -59,9 +68,6 @@ export const GridItem = ({ item, children }: IProps) => {
 
   const { x, y, w, h } = item;
 
-  // -------------------------------------------------------------
-  // GRID AREA DEL ÍTEM SEGÚN SU POSICIÓN DEFINITIVA
-  // -------------------------------------------------------------
   const gridArea = useMemo(() => {
     return `${y + 1} / ${x + 1} / ${y + h + 1} / ${x + w + 1}`;
   }, [x, y, w, h]);
@@ -103,29 +109,46 @@ export const GridItem = ({ item, children }: IProps) => {
     my: number;
     direction: string;
   }) => {
-    // 1. Calcular tamaño base en píxeles (si no lo hemos hecho aún en este gesto)
-    // Pero como esto corre en cada frame, recalculamos la base:
-    const currentW = w * factorX - gap.col;
-    const currentH = h * factorY - gap.row;
+    // Tamaño base actual en pixeles
+    const currentPxW = w * factorX - gap.col;
+    const currentPxH = h * factorY - gap.row;
 
-    // 2. Aplicar lógica según dirección
+    // --- HORIZONTAL ---
     if (direction.includes("e")) {
-      // Derecha: Solo aumenta ancho
-      visualW.set(currentW + dx);
+      // Calculamos nuevo ancho deseado
+      const targetW = currentPxW + dx;
+      // Clampeamos entre min y max
+      const constrainedW = Math.max(minPxW, Math.min(maxPxW, targetW));
+      visualW.set(constrainedW);
     }
-    if (direction.includes("s")) {
-      // Abajo: Solo aumenta alto
-      visualH.set(currentH + dy);
-    }
+
     if (direction.includes("w")) {
-      // Izquierda: Aumenta ancho (inverso al drag) Y mueve X
-      visualW.set(currentW - dx);
-      mx.set(dx); // Movemos visualmente el ítem a la izquierda
+      // Izquierda:
+      const targetW = currentPxW - dx;
+      const constrainedW = Math.max(minPxW, Math.min(maxPxW, targetW));
+
+      // Calculamos el DX efectivo (lo que realmente nos movimos después del clamp)
+      // Si current era 100 y constrained es 100 (porque llegamos al max), el dx efectivo es 0.
+      const effectiveDx = currentPxW - constrainedW;
+
+      visualW.set(constrainedW);
+      mx.set(effectiveDx); // Movemos X solo lo permitido
     }
+
+    if (direction.includes("s")) {
+      const targetH = currentPxH + dy;
+      const constrainedH = Math.max(minPxH, Math.min(maxPxH, targetH));
+      visualH.set(constrainedH);
+    }
+
     if (direction.includes("n")) {
-      // Arriba: Aumenta alto (inverso al drag) Y mueve Y
-      visualH.set(currentH - dy);
-      my.set(dy); // Movemos visualmente el ítem hacia arriba
+      const targetH = currentPxH - dy;
+      const constrainedH = Math.max(minPxH, Math.min(maxPxH, targetH));
+
+      const effectiveDy = currentPxH - constrainedH;
+
+      visualH.set(constrainedH);
+      my.set(effectiveDy);
     }
   };
 
@@ -140,11 +163,9 @@ export const GridItem = ({ item, children }: IProps) => {
       },
 
       onDrag: ({ movement: [dx, dy] }) => {
-        // Mover libremente el ítem durante el drag
         mx.set(dx);
         my.set(dy);
 
-        // Pedir a la grilla que actualice la sombra
         dispatch({
           type: "DRAG_MOVE",
           payload: { x: dx, y: dy },
@@ -192,7 +213,6 @@ export const GridItem = ({ item, children }: IProps) => {
         height: visualH,
         gridArea,
         zIndex: draggingItemId === item.id ? 20 : isSelected ? 10 : 2,
-        // opacity: isResizing ? 0.5 : 1,
       }}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}

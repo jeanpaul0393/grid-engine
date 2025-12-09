@@ -129,3 +129,69 @@
     transition: background 0.2s ease;
   }
 }
+
+.grid-canvas-resizer {
+  position: absolute;
+
+  bottom: -12px;
+  left: 0;
+  width: 100%;
+  height: 24px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  cursor: ns-resize;
+  z-index: 50;
+
+  opacity: 0;
+  animation: fadeIn 0.2s forwards;
+
+  .resizer-handle-button {
+    position: relative;
+    z-index: 2;
+    background-color: white;
+    color: var(--blue-select-item);
+    border: 2px solid var(--blue-select-item);
+    border-radius: 20px;
+    padding: 0px 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    transition: all 0.2s ease;
+    opacity: 0.7;
+  }
+
+  &:hover {
+    .resizer-handle-button {
+      background-color: var(--blue-select-item);
+      color: white;
+      opacity: 1;
+    }
+  }
+
+  &.active {
+    .resizer-line {
+      opacity: 1;
+    }
+
+    .resizer-handle-button {
+      background-color: var(--blue-select-item);
+      color: white;
+      cursor: grabbing;
+    }
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

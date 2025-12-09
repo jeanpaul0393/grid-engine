@@ -5,18 +5,21 @@ import { GridEngineContext } from "./GridEngineContext";
 import "../../styles/styles.scss";
 
 type IProps = {
+  id: string;
   gridConfig: IGridConfig;
   initialLayout?: IGridItem[];
   children: React.ReactNode;
 };
 
 export const GridEngineProvider = ({
+  id,
   children,
   initialLayout = [],
   gridConfig,
 }: IProps) => {
   const [state, dispatch] = useReducer(gridEngineReducer, {
     ...initialGridEngineState,
+    gridId: id,
     config: gridConfig,
     items: initialLayout,
   });

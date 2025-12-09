@@ -6,11 +6,14 @@ import { GridItem } from "./GridItem";
 import { GridItemShadow } from "./GridItemShadow";
 import { useOnClickOutside } from "../hooks/useOnClickOutside";
 import { DragBridge } from "../../core/DragBridge";
+import { GridCanvasResizer } from "./GridCanvasResizer";
 
 export const GridContainer = () => {
   const { config } = useGridEngine();
 
   const { dispatch, state } = useGridEngineContext();
+
+  const { gridId } = state;
 
   const refContainer = useRef<HTMLDivElement>(null);
 
@@ -47,7 +50,7 @@ export const GridContainer = () => {
   const handleDragEnter = (e: React.DragEvent) => {
     const payload = DragBridge.getPayload();
 
-    if (payload) {
+    if (payload && payload.targetGridId === gridId) {
       e.preventDefault();
 
       dispatch({
@@ -68,7 +71,6 @@ export const GridContainer = () => {
 
     if (!refContainer.current) return;
 
-    // Calcular coordenadas relativas
     const rect = refContainer.current.getBoundingClientRect();
     const x = e.clientX - rect.left - (colWidth || 0) / 2;
     const y =
@@ -86,11 +88,25 @@ export const GridContainer = () => {
   };
 
   useEffect(() => {
-    const handleDragStart = () => {
+    const handleDragStart = (e: Event) => {
+      const customEvent = e as CustomEvent;
+      const targetId = customEvent.detail?.targetGridId as string | undefined;
+
+      if (targetId && targetId !== gridId) {
+        return;
+      }
+
       dispatch({ type: "SET_GRID_SELECTION", payload: true });
     };
 
-    const handleDragEnd = () => {
+    const handleDragEnd = (e: Event) => {
+      const customEvent = e as CustomEvent;
+      const targetId = customEvent.detail?.targetGridId as string | undefined;
+
+      if (targetId && targetId !== gridId) {
+        return;
+      }
+
       dispatch({ type: "CANCEL_EXTERNAL_DRAG" });
     };
 
@@ -138,6 +154,7 @@ export const GridContainer = () => {
         })}
 
         <GridItemShadow />
+        <GridCanvasResizer />
       </div>
     </div>
   );

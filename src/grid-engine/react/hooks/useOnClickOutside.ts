@@ -9,7 +9,7 @@ export const useOnClickOutside = <T extends HTMLElement | null = HTMLElement>(
   useEffect(() => {
     const listener = (event: Event) => {
       const el = ref?.current;
-      // Si el click es dentro del elemento, no hacemos nada
+
       if (!el || el.contains((event?.target as Node) || null)) {
         return;
       }
@@ -17,12 +17,26 @@ export const useOnClickOutside = <T extends HTMLElement | null = HTMLElement>(
       handler(event);
     };
 
-    document.addEventListener("mousedown", listener);
-    document.addEventListener("touchstart", listener);
+    const el = ref?.current;
+
+    const targetDoc = el?.ownerDocument || document;
+
+    targetDoc.addEventListener("mousedown", listener);
+    targetDoc.addEventListener("touchstart", listener);
+
+    if (document !== targetDoc) {
+      document.addEventListener("mousedown", listener);
+      document.addEventListener("touchstart", listener);
+    }
 
     return () => {
-      document.removeEventListener("mousedown", listener);
-      document.removeEventListener("touchstart", listener);
+      targetDoc.removeEventListener("mousedown", listener);
+      targetDoc.removeEventListener("touchstart", listener);
+
+      if (document !== targetDoc) {
+        document.removeEventListener("mousedown", listener);
+        document.removeEventListener("touchstart", listener);
+      }
     };
   }, [ref, handler]);
 };
