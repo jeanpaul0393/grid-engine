@@ -3,6 +3,10 @@ import type { ReactNode } from "react";
 interface IDragPayload {
   w: number;
   h: number;
+  minW?: number;
+  maxW?: number;
+  minH?: number;
+  maxH?: number;
   component: ReactNode;
   targetGridId: string;
 }

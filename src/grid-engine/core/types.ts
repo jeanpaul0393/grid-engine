@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import type { TGridEngineAction } from "../react/context/gridEngineReducer";
 
 export interface IGridItem {
   id: string;
@@ -39,4 +40,22 @@ export interface ITool {
   defaultW: number;
   defaultH: number;
   component: React.ReactNode;
+}
+
+export type GridEventType =
+  | "ITEM_MOVED"
+  | "ITEM_RESIZED"
+  | "ITEM_ADDED"
+  | "ITEM_SELECTED"
+  | "ITEM_DELETED";
+
+export interface IGridEventPayload {
+  type: GridEventType;
+  item?: IGridItem;
+  items: IGridItem[];
+}
+
+export interface ISelectionMenuProps {
+  item: IGridItem;
+  dispatch: React.Dispatch<TGridEngineAction>;
 }

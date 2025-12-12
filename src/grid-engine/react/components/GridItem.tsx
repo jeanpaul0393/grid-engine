@@ -20,6 +20,7 @@ export const GridItem = ({ item, children }: IProps) => {
     resizingItemId,
     draggingItemId,
     isGridSelected,
+    selectionMenuComponent: SelectionMenu,
   } = state;
 
   const isSelected = selectedItemId === item.id;
@@ -221,8 +222,27 @@ export const GridItem = ({ item, children }: IProps) => {
         dispatch({ type: "SELECT_ITEM", payload: { id: item.id } });
       }}
     >
-      <div style={{ width: "100%", height: "100%", position: "relative" }}>
+      <div
+        style={{ width: "100%", height: "100%", position: "relative" }}
+        draggable={false}
+      >
         {children}
+
+        {isSelected && !draggingItemId && SelectionMenu && (
+          <div
+            className="cms-context-menu-wrapper"
+            style={{
+              position: "absolute",
+              top: -40,
+              right: 0,
+              zIndex: 100,
+            }}
+            onMouseDown={(e) => e.stopPropagation()}
+          >
+            <SelectionMenu item={item} dispatch={dispatch} />
+          </div>
+        )}
+
         {isSelected && !draggingItemId && (
           <GridResizeHandles
             item={item}

@@ -3,7 +3,11 @@ import {
   resolveCollisions,
   snapToGrid,
 } from "../../core/helpers/gridMath";
-import type { IGridConfig, IGridItem } from "../../core/types";
+import type {
+  IGridConfig,
+  IGridItem,
+  ISelectionMenuProps,
+} from "../../core/types";
 import { v4 as uuidv4 } from "uuid";
 
 export interface IGridEngineState {
@@ -24,7 +28,17 @@ export interface IGridEngineState {
   selectedItemId: string | null;
   isGridSelected: boolean;
 
-  draggingExternal: { w: number; h: number; component: React.ReactNode } | null;
+  draggingExternal: {
+    w: number;
+    h: number;
+    minW?: number;
+    minH?: number;
+    maxW?: number;
+    maxH?: number;
+    component: React.ReactNode;
+  } | null;
+
+  selectionMenuComponent?: React.ComponentType<ISelectionMenuProps>;
 }
 
 export type TGridEngineAction =
@@ -57,7 +71,15 @@ export type TGridEngineAction =
   //External drag
   | {
       type: "START_EXTERNAL_DRAG";
-      payload: { w: number; h: number; component: React.ReactNode };
+      payload: {
+        w: number;
+        h: number;
+        minW?: number;
+        minH?: number;
+        maxW?: number;
+        maxH?: number;
+        component: React.ReactNode;
+      };
     }
   | { type: "EXTERNAL_DRAG_MOVE"; payload: { x: number; y: number } }
   | { type: "END_EXTERNAL_DRAG" }
@@ -348,6 +370,10 @@ export function gridEngineReducer(
         y: state.dragPreview.y,
         w: state.draggingExternal.w,
         h: state.draggingExternal.h,
+        minW: state.draggingExternal.minW,
+        minH: state.draggingExternal.minH,
+        maxW: state.draggingExternal.maxW,
+        maxH: state.draggingExternal.maxH,
         component: state.draggingExternal.component,
       };
 

@@ -5,16 +5,26 @@ interface IProps {
   targetGridId: string;
   w: number;
   h: number;
+  minW?: number;
+  maxW?: number;
+  minH?: number;
+  maxH?: number;
   children: ReactNode;
   className?: string;
+  component: ReactNode;
 }
 
 export const DraggableSource = ({
   targetGridId,
   w,
   h,
+  minW,
+  maxW,
+  minH,
+  maxH,
   children,
   className,
+  component,
 }: IProps) => {
   return (
     <div
@@ -25,7 +35,11 @@ export const DraggableSource = ({
           targetGridId,
           w,
           h,
-          component: children,
+          minW,
+          maxW,
+          minH,
+          maxH,
+          component,
         });
 
         e.dataTransfer.setData(`application/x-grid-w${w}-h${h}`, "");

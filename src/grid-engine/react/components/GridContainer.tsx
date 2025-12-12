@@ -58,6 +58,10 @@ export const GridContainer = () => {
         payload: {
           w: payload.w,
           h: payload.h,
+          minW: payload.minW,
+          minH: payload.minH,
+          maxW: payload.maxW,
+          maxH: payload.maxH,
           component: payload.component,
         },
       });
@@ -120,7 +124,7 @@ export const GridContainer = () => {
   }, [dispatch]);
 
   return (
-    <div style={{ position: "relative" }} ref={refContainer}>
+    <div style={{ position: "relative" }}>
       <div
         className="grid-container"
         ref={refContainer}

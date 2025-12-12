@@ -1,6 +1,20 @@
+:root {
+  --sidebar-text: #4d4d4d;
+  --sidebar-text-hover: #383838;
+  --sidebar-bg-hover: #f5f5f5;
+  --sidebar-bg-active: #dfdfdf;
+  --radius: 8px;
+  --btn-color: #6366f1;
+  --btn-hover: #4f46e5;
+  --btn-active: #4338ca;
+  --btn-shadow: 0 4px 6px -1px rgba(99, 102, 241, 0.4);
+}
+
 * {
   margin: 0;
   padding: 0;
+  font-family: sans-serif;
+  box-sizing: border-box;
 }
 
 html,
@@ -60,4 +74,103 @@ body,
 .section-grid-container {
   max-width: 850px;
   margin: 0 auto;
+}
+
+.sidebar-button {
+  gap: 0.5rem;
+  display: flex;
+  align-items: center;
+  padding: 0.5rem 0.5rem;
+  width: 100%;
+
+  background-color: transparent;
+  color: var(--sidebar-text);
+  border-radius: var(--radius);
+  border: 1px solid transparent;
+
+  font-size: 14px;
+  font-weight: 500;
+  user-select: none;
+  cursor: grab;
+
+  transition: background-color 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+    color 0.2s ease, transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1); /* Efecto elástico sutil */
+
+  /* Estilo del Ícono */
+  svg {
+    stroke-width: 2px;
+    opacity: 0.7;
+    transition: opacity 0.2s ease;
+  }
+
+  /* --- ESTADO HOVER --- */
+  &:hover {
+    background-color: var(--sidebar-bg-hover);
+    color: var(--sidebar-text-hover);
+
+    svg {
+      opacity: 1;
+    }
+  }
+}
+
+.btn-modern {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+
+  padding: 10px 20px;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1;
+
+  background-color: var(--btn-color);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  outline: none;
+
+  transition: background-color 0.2s ease, transform 0.1s ease,
+    box-shadow 0.2s ease;
+
+  user-select: none;
+
+  &:hover {
+    background-color: var(--btn-hover);
+
+    box-shadow: var(--btn-shadow);
+  }
+
+  &:active {
+    background-color: var(--btn-active);
+
+    transform: scale(0.99) translateY(0);
+
+    box-shadow: none;
+  }
+
+  &:focus-visible {
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.3);
+  }
+}
+
+.cms-context-menu-wrapper {
+  pointer-events: auto;
+  cursor: default;
+
+  button {
+    border: none;
+    background: white;
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 4px;
+  }
+}
+.btn-icon-danger {
+  &:hover {
+    background: #fef2f2;
+  }
 }
